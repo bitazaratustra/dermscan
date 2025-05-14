@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+sql_app.db
+instance/
+*.sqlite3
+.idea/
+.vscode/
+.DS_Store
+ml/datasets/

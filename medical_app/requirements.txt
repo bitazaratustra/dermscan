@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+passlib[bcrypt]
+python-jose
+python-multipart
+python-dotenv
+psycopg2-binary
+pydantic[email]
+torch
+torchvision
+pillow
+numpy==1.26.4
