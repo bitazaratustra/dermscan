@@ -14,10 +14,10 @@ async def save_upload_image(file: UploadFile) -> str:
     os.makedirs(UPLOAD_DIR, exist_ok=True)
 
     filename = f"{uuid4().hex}{ext}"
-    file_path = UPLOAD_DIR / filename  # ✅ Usar Path.join (/) para concatenar rutas
+    file_path = UPLOAD_DIR / filename
 
     with open(file_path, "wb") as buffer:
         content = await file.read()
         buffer.write(content)
 
-    return filename  # ✅ Solo devolver el nombre, no la ruta completa
+    return filename

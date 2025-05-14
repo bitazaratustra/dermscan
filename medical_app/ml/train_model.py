@@ -6,7 +6,7 @@ from torchvision import datasets, transforms, models
 from torch.utils.data import DataLoader, random_split
 from torch import nn, optim
 
-# Config
+
 data_dir = 'ml/datasets/train'
 model_path = 'ml/model.pth'
 class_idx_path = 'ml/class_names.json'
@@ -14,7 +14,7 @@ batch_size = 32
 num_epochs = 10
 val_split = 0.2
 
-# Transform
+
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.RandomHorizontalFlip(),
@@ -23,7 +23,7 @@ transform = transforms.Compose([
                          [0.229, 0.224, 0.225])
 ])
 
-# Dataset and split
+
 dataset = datasets.ImageFolder(data_dir, transform=transform)
 class_names = dataset.classes
 os.makedirs("ml", exist_ok=True)

@@ -1,5 +1,5 @@
 from database import Base, engine
-from models import models  # importa los modelos para que Base los registre
+from models import models
 
 def init():
     print("Creando tablas...")

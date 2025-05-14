@@ -27,7 +27,7 @@ def get_user_by_email(db: Session, email: str):
 def create_user(db: Session, user: schemas.UserCreate):
     hashed_pw = get_password_hash(user.password)
     db_user = models.User(
-        username=user.username,  # Añadido: guardar el username
+        username=user.username,
         email=user.email,
         hashed_password=hashed_pw
     )
@@ -40,5 +40,5 @@ def authenticate_user(db: Session, email: str, password: str):
     user = get_user_by_email(db, email)
     if not user or not verify_password(password, user.hashed_password):
         return None
-    # Añadido: el token ahora incluirá el id y username
+
     return create_access_token({"sub": user.email, "id": user.id, "username": user.username})

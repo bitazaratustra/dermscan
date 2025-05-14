@@ -7,7 +7,7 @@ import os
 
 router = APIRouter()
 
-# Cargar el modelo y las clases solo una vez
+
 with open("ml/class_names.json") as f:
     class_names = json.load(f)
 
@@ -16,11 +16,10 @@ model = SkinClassifier("ml/model.pth", class_names)
 @router.post("/lesion")
 async def upload_lesion_image(file: UploadFile = File(...)):
     try:
-        # Guardar imagen en disco
+
         filename = await file_service.save_upload_image(file)
         image_path = os.path.join("app/static/uploads", filename)
 
-        # Clasificar imagen
         prediction = model.predict(image_path)
 
         return JSONResponse(
