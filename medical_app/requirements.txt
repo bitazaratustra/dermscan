@@ -8,7 +8,13 @@ python-multipart
 python-dotenv
 psycopg2-binary
 pydantic[email]
-torch
-torchvision
 pillow
 numpy==1.26.4
+torch==2.0.1
+torchvision==0.15.2
+alembic>=1.11.1
+httpx
+python-jose[cryptography]
+passlib
+python-json-logger
+pydantic_settings

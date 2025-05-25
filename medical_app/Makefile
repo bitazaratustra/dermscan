@@ -1,11 +1,11 @@
-
 VENV_DIR = venv
 APP_DIR = app
 TEST_DIR = tests
-DOCKER_IMAGE_NAME = medical_app
+DOCKER_IMAGE_NAME = dermascan-app
 DOCKER_COMPOSE_FILE = docker-compose.yml
+DOCKER_NETWORK = dermascan-network
 
-
+.PHONY: install venv run run_docker build stop test clean help migrate
 
 install:
 	@echo "Instalando dependencias..."
@@ -14,45 +14,48 @@ install:
 venv:
 	@echo "Creando entorno virtual..."
 	python3 -m venv $(VENV_DIR)
+	$(VENV_DIR)/bin/pip install --upgrade pip
 	$(VENV_DIR)/bin/pip install -r requirements.txt
 
-
-run_app:
-	@echo "Iniciando la aplicación localmente..."
-	uvicorn app.main:app --reload
-
+run:
+	@echo "Iniciando aplicación local (requiere DB corriendo)..."
+	uvicorn app.main:app --reload --port 8000
 
 run_docker: build
-	@echo "Iniciando la aplicación en Docker..."
-	docker-compose up
-
+	@echo "Iniciando aplicación en Docker..."
+	docker-compose -f $(DOCKER_COMPOSE_FILE) up
 
 build:
 	@echo "Construyendo imagen Docker..."
-	docker-compose build
-
+	docker-compose -f $(DOCKER_COMPOSE_FILE) build
 
 stop:
-	@echo "Deteniendo contenedores Docker..."
-	docker-compose down
-
+	@echo "Deteniendo contenedores y limpiando recursos..."
+	docker-compose -f $(DOCKER_COMPOSE_FILE) down -v --remove-orphans
 
 test:
 	@echo "Ejecutando pruebas..."
-	pytest $(TEST_DIR)
+	docker-compose -f $(DOCKER_COMPOSE_FILE) run web pytest $(TEST_DIR)
 
-
-clean:
-	@echo "Limpiando entorno virtual..."
+clean: stop
+	@echo "Limpiando todo el entorno..."
 	rm -rf $(VENV_DIR)
+	docker system prune -a -f
+	docker volume prune -f
+
+migrate:
+	@echo "Ejecutando migraciones de la base de datos..."
+	docker-compose -f $(DOCKER_COMPOSE_FILE) exec web alembic upgrade head
 
 help:
 	@echo "Comandos disponibles:"
-	@echo "  make install       Instala las dependencias"
-	@echo "  make venv          Crea el entorno virtual y instala dependencias"
-	@echo "  make run           Ejecuta la aplicación usando Docker Compose"
-	@echo "  make build         Construye la imagen Docker"
-	@echo "  make stop          Detiene los contenedores Docker"
-	@echo "  make test          Ejecuta las pruebas"
-	@echo "  make clean         Limpia el entorno de Docker (contenedores, imágenes y volúmenes)"
+	@echo "  make install       Instala las dependencias localmente"
+	@echo "  make venv          Crea entorno virtual con dependencias"
+	@echo "  make run           Inicia la aplicación en modo desarrollo local"
+	@echo "  make run_docker    Inicia la aplicación en contenedores Docker"
+	@echo "  make build         Reconstruye las imágenes Docker"
+	@echo "  make stop          Detiene contenedores y limpia recursos Docker"
+	@echo "  make test          Ejecuta las pruebas unitarias en Docker"
+	@echo "  make clean         Limpieza completa (Docker y entorno local)"
+	@echo "  make migrate       Ejecuta migraciones de base de datos"
 	@echo "  make help          Muestra esta ayuda"
