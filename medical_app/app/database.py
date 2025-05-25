@@ -5,6 +5,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import os
+from alembic.config import Config
+
+
+alembic_config = Config("alembic.ini")
+database_url = alembic_config.get_main_option("sqlalchemy.url")
 
 POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "yourpassword")

@@ -2,7 +2,13 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
-from app.models import models, schemas
+from medical_app.app.schemas import user
+from medical_app.app.models import user
+from ..models.user import User
+from app.utils.security import get_password_hash, verify_password
+import uuid
+import hashlib
+from app.config import settings
 
 SECRET_KEY = "super-secret"
 ALGORITHM = "HS256"
@@ -22,11 +28,12 @@ def create_access_token(data: dict):
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+    return db.query(user.User).filter(user.User.email == email).first()
 
-def create_user(db: Session, user: schemas.UserCreate):
+
+def create_user(db: Session, user: user.UserCreate):
     hashed_pw = get_password_hash(user.password)
-    db_user = models.User(
+    db_user = user.User(
         username=user.username,
         email=user.email,
         hashed_password=hashed_pw
@@ -36,9 +43,29 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     return db_user
 
-def authenticate_user(db: Session, email: str, password: str):
-    user = get_user_by_email(db, email)
-    if not user or not verify_password(password, user.hashed_password):
-        return None
+def authenticate_user(
+    db: Session,
+    email: str,
+    password: str
+) -> User | bool:
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        return False
+    if not verify_password(password, user.hashed_password):
+        return False
+    return user
 
-    return create_access_token({"sub": user.email, "id": user.id, "username": user.username})
+
+
+
+def generate_secure_api_key():
+    # Generar clave única con UUID
+    raw_key = str(uuid.uuid4())
+    # Hashear la clave para almacenamiento seguro
+    hashed_key = hashlib.sha256(raw_key.encode()).hexdigest()
+    return raw_key, hashed_key
+
+# Ejemplo de uso (ejecutar una vez para generar la clave)
+api_key, hashed_api_key = generate_secure_api_key()
+print(f"Guarda esta clave en OpenAI GPT: {api_key}")
+print(f"Guarda este hash en tu .env: OPENAI_API_KEY_HASH={hashed_api_key}")

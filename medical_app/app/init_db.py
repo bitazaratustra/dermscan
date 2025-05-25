@@ -1,5 +1,5 @@
 from database import Base, engine
-from models import models
+from medical_app.app.models import user
 
 def init():
     print("Creando tablas...")
