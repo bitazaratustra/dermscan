@@ -24,5 +24,9 @@ class SkinClassifier:
         image = self.transform(image).unsqueeze(0).to(self.device)
         with torch.no_grad():
             outputs = self.model(image)
-            _, predicted = outputs.max(1)
-        return self.class_names[predicted.item()]
+            probabilities = torch.nn.functional.softmax(outputs, dim=1)
+            confidence, predicted = probabilities.max(1)
+        return {
+            "class_name": self.class_names[predicted.item()],
+            "confidence": confidence.item()
+        }

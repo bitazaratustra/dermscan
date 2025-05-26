@@ -15,6 +15,9 @@ torchvision==0.15.2
 alembic>=1.11.1
 httpx
 python-jose[cryptography]
-passlib
+passlib==1.7.4
 python-json-logger
 pydantic_settings
+openai
+bcrypt==4.0.1
+aiofiles

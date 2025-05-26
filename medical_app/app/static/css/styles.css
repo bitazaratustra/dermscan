@@ -1,0 +1,92 @@
+/* static/frontend/css/styles.css */
+
+/* Estilo general para modo oscuro */
+body.dark {
+  background-color: #1f2937; /* slate-800 */
+  color: #e5e7eb; /* gray-200 */
+}
+
+/* Ajuste de fondos */
+.dark .bg-white {
+  background-color: #374151 !important; /* slate-700 */
+}
+
+.dark .bg-blue-50 {
+  background-color: #1e3a8a !important; /* blue-900 */
+}
+
+.dark .bg-gray-50 {
+  background-color: #1f2937 !important; /* slate-800 */
+}
+
+/* Colores de texto */
+.dark .text-gray-700,
+.dark .text-gray-600 {
+  color: #d1d5db !important; /* gray-300 */
+}
+
+.dark .text-blue-600 {
+  color: #60a5fa !important; /* blue-400 */
+}
+
+.dark .text-gray-500 {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+.dark .text-gray-800 {
+  color: #f3f4f6 !important; /* gray-100 */
+}
+
+/* Inputs, selects, textareas */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #4b5563; /* gray-600 */
+  color: #f3f4f6; /* gray-100 */
+  border-color: #6b7280; /* gray-500 */
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #9ca3af; /* gray-400 */
+}
+
+/* Botones */
+.dark button {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+}
+
+.dark .bg-green-600 {
+  background-color: #10b981 !important; /* emerald-500 */
+}
+
+.dark .bg-green-700:hover {
+  background-color: #059669 !important; /* emerald-600 */
+}
+
+.dark .bg-indigo-600 {
+  background-color: #6366f1 !important; /* indigo-500 */
+}
+
+.dark .bg-indigo-700:hover {
+  background-color: #4f46e5 !important; /* indigo-600 */
+}
+
+.dark .bg-red-500 {
+  background-color: #ef4444 !important; /* red-500 */
+}
+
+.dark .bg-red-600:hover {
+  background-color: #dc2626 !important; /* red-600 */
+}
+
+/* Bordes de componentes */
+.dark .border-gray-300 {
+  border-color: #6b7280 !important; /* gray-500 */
+}
+
+/* Cards, cajas y contenedores */
+.dark .shadow,
+.dark .shadow-lg {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}

@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
 from .base import Base
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__ = "users"
@@ -10,3 +11,5 @@ class User(Base):
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     full_name = Column(String, nullable=True)
+
+    appointments = relationship("Appointment", back_populates="user")

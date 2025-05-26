@@ -10,6 +10,7 @@ import json
 import os
 import uuid
 from pathlib import Path
+import aiofiles
 
 router = APIRouter(tags=["Predictions"])
 
@@ -33,20 +34,17 @@ async def save_upload_file(file: UploadFile) -> str:
     return str(file_path.relative_to("app/static"))
 
 
-@router.post("/predict", response_model=PredictionResponse)
+@router.post("/", response_model=PredictionResponse)
 async def predict_lesion(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # 1. Guardar imagen
         filename = await save_upload_file(file)
+        full_path = Path("app/static") / filename
+        prediction = model.predict(str(full_path))
 
-        # 2. Realizar predicción
-        prediction = model.predict(filename)
-
-        # 3. Guardar en base de datos
         db_prediction = Prediction(
             user_id=current_user.id,
             image_path=filename,
@@ -61,6 +59,9 @@ async def predict_lesion(
         return db_prediction
 
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+
         db.rollback()
         raise HTTPException(
             status_code=500,
