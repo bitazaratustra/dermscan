@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,6 +6,7 @@
   <title>Dashboard - DermScan</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-gray-50">
@@ -22,7 +22,7 @@
         <div class="hidden md:flex items-center space-x-8">
           <a href="#diagnostic" class="text-gray-700 hover:text-blue-600">Diagnóstico</a>
           <a href="#history" class="text-gray-700 hover:text-blue-600">Historial</a>
-          <a href="#appointments" class="text-gray-700 hover:text-blue-600">Citas</a>
+          <a href="#appointments" id="loadAppointmentsBtn" class="text-gray-700 hover:text-blue-600">Citas</a>
           <button onclick="auth.logout()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
             Cerrar sesión
           </button>
@@ -73,8 +73,6 @@
       </div>
     </div>
 
-
-
     <!-- Gráfico -->
     <div class="bg-white p-6 rounded-xl shadow mb-8">
       <h3 class="text-xl font-semibold mb-4 text-blue-600">Evolución del Diagnóstico</h3>
@@ -97,93 +95,130 @@
     </div>
   </div>
 
-<!-- Modal de Agendar Cita -->
-<div
-  id="appointment-modal"
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 transition-opacity duration-200"
->
-  <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-lg mx-auto overflow-hidden">
-    <!-- Encabezado del Modal -->
-    <div class="flex items-center justify-between bg-blue-600 px-6 py-4">
-      <div class="flex items-center space-x-2">
-        <!-- Ícono (puede ser un calendario) -->
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6 text-white"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 7V3m8 4V3m-9 8h10m-14 5h18a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v11a2 2 0 002 2z" />
-        </svg>
-        <h3 class="text-lg font-semibold text-white">Agendar Cita Médica</h3>
-      </div>
-      <!-- Botón “X” para cerrar -->
-      <button
-        onclick="closeAppointmentModal()"
-        class="text-white hover:text-gray-200 focus:outline-none"
-        aria-label="Cerrar"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-6 w-6"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-    </div>
-
-    <!-- Contenido del Modal -->
-    <div class="px-6 py-6">
-      <!-- Texto de instrucciones -->
-      <p class="text-gray-700 mb-4">
-        Seleccioná la fecha y hora deseadas para tu cita médica.
-      </p>
-
-      <!-- Contenedor del campo de fecha/hora -->
-      <div class="mb-4">
-        <label
-          for="appointment-date"
-          class="block text-sm font-medium text-gray-700 mb-1"
-          >Fecha y hora</label
-        >
-        <input
-          type="datetime-local"
-          id="appointment-date"
-          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          min="" <!-- Se establecerá dinámicamente -->
-        />
-        <p id="appointment-error" class="mt-2 text-sm text-red-600 hidden">
-          Por favor, seleccioná una fecha y hora válidas.
-        </p>
-      </div>
-
-      <!-- Botones -->
-      <div class="flex justify-end space-x-3">
+  <!-- Modal de Agendar Cita -->
+  <div
+    id="appointment-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 transition-opacity duration-200"
+  >
+    <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-lg mx-auto overflow-hidden">
+      <!-- Encabezado del Modal -->
+      <div class="flex items-center justify-between bg-blue-600 px-6 py-4">
+        <div class="flex items-center space-x-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 7V3m8 4V3m-9 8h10m-14 5h18a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v11a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-lg font-semibold text-white">Agendar Cita Médica</h3>
+        </div>
         <button
           onclick="closeAppointmentModal()"
-          class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+          class="text-white hover:text-gray-200 focus:outline-none"
+          aria-label="Cerrar"
         >
-          Cancelar
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-6 w-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
-        <button
-          id="confirm-appointment"
-          class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
-        >
-          Agendar
+      </div>
+
+      <!-- Contenido del Modal -->
+      <div class="px-6 py-6">
+        <p class="text-gray-700 mb-4">
+          Seleccioná la fecha y hora deseadas para tu cita médica.
+        </p>
+
+        <div class="mb-4">
+          <label
+            for="appointment-date"
+            class="block text-sm font-medium text-gray-700 mb-1"
+            >Fecha y hora</label
+          >
+          <input
+            type="datetime-local"
+            id="appointment-date"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            min=""
+          />
+          <p id="appointment-error" class="mt-2 text-sm text-red-600 hidden">
+            Por favor, seleccioná una fecha y hora válidas.
+          </p>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+          <button
+            onclick="closeAppointmentModal()"
+            class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+          >
+            Cancelar
+          </button>
+          <button
+            id="confirm-appointment"
+            class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+          >
+          Agendar Cita
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Citas (Listado) -->
+  <div id="appointments-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-4xl max-h-[90vh] overflow-hidden">
+      <div class="flex items-center justify-between bg-blue-600 px-6 py-4">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10m-14 5h18a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v11a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-lg font-semibold text-white">Mis Citas</h3>
+        </div>
+        <button onclick="closeAppointmentsModal()" class="text-white hover:text-gray-200 focus:outline-none" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="px-6 py-6 overflow-y-auto max-h-[70vh]">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnóstico</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Confianza</th>
+            </tr>
+          </thead>
+          <tbody id="appointments-list" class="bg-white divide-y divide-gray-200">
+            <!-- Las citas se cargarán aquí -->
+          </tbody>
+        </table>
+        <div class="mt-4 text-center" id="appointments-empty-message">
+          <p class="text-gray-500">No tienes citas programadas.</p>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-6 py-3 flex justify-end">
+        <button onclick="closeAppointmentsModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+          Cerrar
         </button>
       </div>
     </div>
   </div>
-</div>
 
-
-  <!-- Modal del bot -->
+  <!-- Modal del bot (recomendación) -->
   <div id="bot-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
     <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
       <h3 class="text-xl font-bold text-blue-700 mb-4">Recomendación del Bot</h3>
@@ -193,24 +228,46 @@
       </div>
     </div>
   </div>
+
   <!-- Modal de Chat -->
   <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg flex flex-col max-h-[80vh]">
-      <h3 class="text-xl font-bold text-blue-700 mb-4">Chat con el Bot Médico</h3>
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between bg-blue-600 px-6 py-4">
+        <div class="flex items-center space-x-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+          </svg>
+          <h3 class="text-lg font-semibold text-white">Asistente Médico</h3>
+        </div>
+        <button onclick="closeChatModal()" class="text-white hover:text-gray-200 focus:outline-none" aria-label="Cerrar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
 
-      <div id="chat-messages" class="flex-grow overflow-y-auto border rounded p-4 mb-4 bg-gray-50 chat-bot">
+      <div id="chat-messages" class="flex-grow overflow-y-auto p-4 bg-gray-50 max-h-[60vh]">
         <!-- Mensajes aparecerán aquí -->
       </div>
 
-
-    <div class="flex flex-col space-y-2">
-      <textarea id="chat-input" type="text" placeholder="Escribe tu mensaje..." class="chat-bot-messages w-full border rounded px-3 py-2" rows="4"></textarea>
-      <div class="flex space-x-2">
-        <button id="send-chat-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Enviar</button>
-        <button onclick="closeChatModal()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cerrar</button>
+      <div class="p-4 border-t">
+        <div class="flex">
+          <textarea
+            id="chat-input"
+            placeholder="Escribe tu pregunta..."
+            class="flex-grow border rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 resize-none"
+            rows="2"
+          ></textarea>
+          <button
+            id="send-chat-btn"
+            class="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
       </div>
-    </div>
-
     </div>
   </div>
 

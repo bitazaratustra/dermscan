@@ -132,19 +132,93 @@ async function fetchHistory() {
   }
 }
 
-/**
- * Inicia el proceso de chat: guarda el predictionId y muestra el modal de chat.
- * @param {number} predictionId – ID de la predicción activa.
- */
-async function askBot(predictionId) {
-  currentPredictionId = predictionId;
-  document.getElementById('chat-messages').innerHTML = '';
-  document.getElementById('chat-input').value = '';
-  document.getElementById('chat-modal').classList.remove('hidden');
-  document.getElementById('chat-input').focus();
+// ------------------ Funciones para el Modal de Citas (Listado) ------------------
+
+function openAppointmentsModal() {
+  document.getElementById('appointments-modal').classList.remove('hidden');
 }
 
-// ------------------ Funciones del Modal de Citas ------------------
+function closeAppointmentsModal() {
+  document.getElementById('appointments-modal').classList.add('hidden');
+}
+
+async function loadAppointments() {
+  try {
+    const res = await fetch('/appointments', { headers: auth.headers });
+    if (!res.ok) {
+      alert('Error al cargar citas');
+      return;
+    }
+
+    const appointments = await res.json();
+    const container = document.getElementById('appointments-list');
+    const emptyMessage = document.getElementById('appointments-empty-message');
+
+    container.innerHTML = '';
+
+    if (appointments.length === 0) {
+      emptyMessage.classList.remove('hidden');
+    } else {
+      emptyMessage.classList.add('hidden');
+      appointments.forEach(a => {
+        const row = document.createElement('tr');
+
+        // Determinar clase de estado según el estado de la cita
+        let statusClass = '';
+        switch(a.status.toLowerCase()) {
+          case 'pendiente':
+            statusClass = 'text-yellow-600 bg-yellow-100';
+            break;
+          case 'confirmada':
+            statusClass = 'text-green-600 bg-green-100';
+            break;
+          case 'cancelada':
+            statusClass = 'text-red-600 bg-red-100';
+            break;
+          default:
+            statusClass = 'text-gray-600 bg-gray-100';
+        }
+
+        row.innerHTML = `
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="flex items-center">
+              <div class="ml-4">
+                <div class="text-sm font-medium text-gray-900">${a.user_full_name}</div>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-900">${a.diagnosis}</div>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${new Date(a.scheduled_time).toLocaleString()}
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap">
+            <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusClass}">
+              ${a.status}
+            </span>
+          </td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            ${(a.confidence*100).toFixed(2)}%
+          </td>
+        `;
+        container.appendChild(row);
+      });
+    }
+  } catch (err) {
+    console.error('Error al cargar citas:', err);
+    alert('Error al cargar citas');
+  }
+}
+
+// Actualizar el evento del botón de citas
+document.getElementById('loadAppointmentsBtn').addEventListener('click', async (e) => {
+  e.preventDefault();
+  await loadAppointments();
+  openAppointmentsModal();
+});
+
+// ------------------ Funciones del Modal de Agendar Cita ------------------
 
 /**
  * Muestra el modal de agendar cita y establece la fecha mínima (hoy, con hora y minuto).
@@ -286,11 +360,18 @@ function closeChatModal() {
 function addChatMessage(text, fromBot = true) {
   const container = document.getElementById('chat-messages');
   const msgDiv = document.createElement('div');
-  msgDiv.className = fromBot
-    ? 'mb-2 p-2 bg-blue-100 rounded text-blue-900'
-    : 'mb-2 p-2 bg-gray-300 rounded text-gray-800 text-right';
-  msgDiv.textContent = text;
+  msgDiv.className = `mb-3 flex ${fromBot ? 'justify-start' : 'justify-end'}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = fromBot
+    ? 'bg-blue-100 text-blue-900 rounded-r-xl rounded-bl-xl px-4 py-2 max-w-[80%]'
+    : 'bg-gray-200 text-gray-800 rounded-l-xl rounded-br-xl px-4 py-2 max-w-[80%]';
+
+  bubble.textContent = text;
+  msgDiv.appendChild(bubble);
   container.appendChild(msgDiv);
+
+  // Scroll automático al último mensaje
   container.scrollTop = container.scrollHeight;
 }
 
@@ -339,16 +420,14 @@ document.getElementById('send-chat-btn').addEventListener('click', async () => {
   }
 });
 
-// ------------------ Listener para abrir el Chat Modal ------------------
-
-document.getElementById('btn-chat').addEventListener('click', () => {
-  showChatModal();
-});
+// ------------------ Inicio del Chat ------------------
 
 /**
- * Muestra el chat modal (resetea contenido y pone foco en el textarea).
+ * Inicia el proceso de chat: guarda el predictionId y muestra el modal de chat.
+ * @param {number} predictionId – ID de la predicción activa.
  */
-function showChatModal() {
+async function askBot(predictionId) {
+  currentPredictionId = predictionId;
   document.getElementById('chat-messages').innerHTML = '';
   document.getElementById('chat-input').value = '';
   document.getElementById('chat-modal').classList.remove('hidden');

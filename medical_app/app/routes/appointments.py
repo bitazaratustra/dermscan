@@ -21,6 +21,7 @@ async def create_appointment(
     if not prediction:
         raise HTTPException(status_code=404, detail="Diagnóstico no encontrado")
 
+
     db_appointment = Appointment(
         user_id=current_user.id,
         prediction_id=appointment.prediction_id,
@@ -36,7 +37,6 @@ async def create_appointment(
 
 @router.get("", response_model=List[AppointmentSummary])
 async def get_all_appointments(db: Session = Depends(get_db)):
-    # Para admin o médicos
     appointments = db.query(Appointment).join(Prediction).join(User).all()
     return [
         AppointmentSummary(

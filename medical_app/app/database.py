@@ -1,4 +1,6 @@
 from dotenv import load_dotenv
+
+from .config.settings import settings
 load_dotenv()
 
 from sqlalchemy import create_engine
@@ -23,7 +25,8 @@ SQLALCHEMY_DATABASE_URL = (
 
 
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL)
+engine = create_engine(settings.database_url, echo=True)
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

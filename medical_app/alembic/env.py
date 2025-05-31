@@ -8,6 +8,7 @@ from app.database import SQLALCHEMY_DATABASE_URL
 from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import create_engine
+from app.config.settings import settings
 
 # Importa tu clase Base y modelos aquí
 from app.models.base import Base
@@ -34,7 +35,9 @@ if config.config_file_name is not None:
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
+
+config.set_main_option("sqlalchemy.url", settings.database_url)
+
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.

@@ -60,8 +60,6 @@ body.dark {
   height: 100px;
 }
 
-
-
 /* Botones */
 .dark button {
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
@@ -100,4 +98,117 @@ body.dark {
 .dark .shadow,
 .dark .shadow-lg {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* ----- MEJORAS PROFESIONALES ----- */
+
+/* Mejoras generales */
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Mejora para inputs */
+input, textarea, select {
+  transition: all 0.2s ease;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Botones mejorados */
+button {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* Tarjetas con mejor sombreado */
+.bg-white, .dark .bg-white {
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Mejora para el área de subida de imágenes */
+.border-dashed {
+  transition: all 0.3s ease;
+  border-radius: 1rem;
+}
+
+.border-dashed:hover {
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Animación de carga */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Estilos para el modal de citas */
+#appointments-modal {
+  z-index: 100;
+}
+
+#appointments-modal .bg-white {
+  border-radius: 1.5rem;
+}
+
+/* Estilos para las burbujas del chat */
+#chat-messages .flex {
+  margin-bottom: 0.75rem;
+}
+
+#chat-messages .bg-blue-100 {
+  border-radius: 1rem 1rem 1rem 0;
+}
+
+#chat-messages .bg-gray-200 {
+  border-radius: 1rem 1rem 0 1rem;
+}
+
+/* Scroll personalizado */
+#chat-messages::-webkit-scrollbar,
+#appointments-modal div::-webkit-scrollbar {
+  width: 6px;
+}
+
+#chat-messages::-webkit-scrollbar-track,
+#appointments-modal div::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb,
+#appointments-modal div::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+
+#chat-messages::-webkit-scrollbar-thumb:hover,
+#appointments-modal div::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+.dark #chat-messages::-webkit-scrollbar-track,
+.dark #appointments-modal div::-webkit-scrollbar-track {
+  background: #374151;
+}
+
+.dark #chat-messages::-webkit-scrollbar-thumb,
+.dark #appointments-modal div::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark #chat-messages::-webkit-scrollbar-thumb:hover,
+.dark #appointments-modal div::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }

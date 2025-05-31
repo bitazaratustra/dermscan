@@ -21,3 +21,7 @@ pydantic_settings
 openai
 bcrypt==4.0.1
 aiofiles
+transformers
+torch
+sentencepiece
+onnxruntime
