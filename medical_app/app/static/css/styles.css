@@ -51,6 +51,17 @@ body.dark {
   color: #9ca3af; /* gray-400 */
 }
 
+/* Chatbot */
+.chat-bot {
+  height: 180px;
+}
+
+.chat-bot-messages {
+  height: 100px;
+}
+
+
+
 /* Botones */
 .dark button {
   transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;

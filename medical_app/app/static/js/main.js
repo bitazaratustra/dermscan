@@ -1,11 +1,15 @@
+// main.js
+
+// ------------------ Configuración de Endpoints ------------------
 const API = {
   user: '/user',
   predict: '/upload',
   history: '/predictions',
-  chat: '/chat',
+  chat: '/chat/',
   appointment: '/appointments'
 };
 
+// ------------------ Manejo de Autenticación ------------------
 const auth = {
   get token() {
     return localStorage.getItem('authToken');
@@ -26,6 +30,15 @@ const auth = {
   }
 };
 
+// ------------------ Variables Globales ------------------
+let currentPredictionId = null; // Se usará para mantener el ID de la predicción activa
+let chartInstance = null;       // Para almacenar la instancia del gráfico
+
+// ------------------ Funciones Principales ------------------
+
+/**
+ * Obtiene la información del usuario actual y la muestra en el DOM.
+ */
 async function fetchUser() {
   try {
     const res = await fetch(API.user, { headers: auth.headers });
@@ -39,6 +52,10 @@ async function fetchUser() {
   }
 }
 
+/**
+ * Envía la imagen al backend para generar el diagnóstico.
+ * @param {File} file – Archivo de imagen a subir.
+ */
 async function handleUpload(file) {
   const formData = new FormData();
   formData.append('file', file);
@@ -51,7 +68,10 @@ async function handleUpload(file) {
       body: formData
     });
 
-    if (!res.ok) return alert('Error procesando imagen');
+    if (!res.ok) {
+      alert('Error procesando imagen');
+      return;
+    }
 
     const result = await res.json();
     updateDiagnosis(result);
@@ -61,14 +81,24 @@ async function handleUpload(file) {
   }
 }
 
+/**
+ * Muestra los resultados del diagnóstico en el DOM y habilita los botones.
+ * @param {Object} data – Objeto con { id, diagnosis, confidence }.
+ */
 function updateDiagnosis(data) {
+  currentPredictionId = data.id;
   document.getElementById('diagnosis-text').textContent = data.diagnosis;
   document.getElementById('confidence').textContent = `${(data.confidence * 100).toFixed(2)}%`;
 
+  // Al hacer clic en "Consultar al bot", se abre el chat modal
   document.getElementById('btn-chat').onclick = () => askBot(data.id);
+  // Al hacer clic en "Solicitar cita médica", se abre el modal de citas
   document.getElementById('btn-appointment').onclick = () => showAppointmentModal(data.id);
 }
 
+/**
+ * Obtiene el historial de diagnósticos y los muestra en la sección correspondiente.
+ */
 async function fetchHistory() {
   try {
     const res = await fetch(API.history, { headers: auth.headers });
@@ -78,57 +108,102 @@ async function fetchHistory() {
     const container = document.getElementById('medical-history');
     container.innerHTML = '';
 
-    history.forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-2';
-      div.innerHTML = `
-        <p><strong>Diagnóstico:</strong> ${item.diagnosis}</p>
-        <p><strong>Confianza:</strong> ${(item.confidence * 100).toFixed(2)}%</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400">${new Date(item.created_at).toLocaleString()}</p>
-      `;
-      container.appendChild(div);
-    });
-
-    drawChart(history);
+    if (history.length === 0) {
+      const p = document.createElement('p');
+      p.id = 'no-history';
+      p.className = 'text-gray-500 col-span-full';
+      p.textContent = 'No se han registrado diagnósticos previos.';
+      container.appendChild(p);
+    } else {
+      history.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'bg-gray-100 dark:bg-gray-700 p-4 rounded-lg mb-2';
+        div.innerHTML = `
+          <p><strong>Diagnóstico:</strong> ${item.diagnosis}</p>
+          <p><strong>Confianza:</strong> ${(item.confidence * 100).toFixed(2)}%</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400">${new Date(item.created_at).toLocaleString()}</p>
+        `;
+        container.appendChild(div);
+      });
+      drawChart(history);
+    }
   } catch (err) {
     console.error('Error al cargar historial:', err);
   }
 }
 
+/**
+ * Inicia el proceso de chat: guarda el predictionId y muestra el modal de chat.
+ * @param {number} predictionId – ID de la predicción activa.
+ */
 async function askBot(predictionId) {
-  showLoading();
-  try {
-    const res = await fetch(API.chat, {
-      method: 'POST',
-      headers: {
-        ...auth.headers,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ prediction_id: predictionId })
-    });
-
-    if (!res.ok) return alert('Error al consultar al bot');
-
-    const data = await res.json();
-    showBotResponse(data.recommendation);
-  } finally {
-    hideLoading();
-  }
+  currentPredictionId = predictionId;
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-input').value = '';
+  document.getElementById('chat-modal').classList.remove('hidden');
+  document.getElementById('chat-input').focus();
 }
 
-// Agendamiento de citas
-let currentPredictionId = null;
+// ------------------ Funciones del Modal de Citas ------------------
 
+/**
+ * Muestra el modal de agendar cita y establece la fecha mínima (hoy, con hora y minuto).
+ * @param {number} predictionId – ID de la predicción activa.
+ */
 function showAppointmentModal(predictionId) {
   currentPredictionId = predictionId;
-  document.getElementById('appointment-modal').classList.remove('hidden');
+
+  // Limpiamos posibles mensajes de error previos
+  document.getElementById('appointment-error').classList.add('hidden');
+
+  // Establecemos el valor mínimo del input como “ahora”
+  const inputDate = document.getElementById('appointment-date');
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const hour = String(now.getHours()).padStart(2, '0');
+  const minute = String(now.getMinutes()).padStart(2, '0');
+  inputDate.min = `${year}-${month}-${day}T${hour}:${minute}`;
+
+  // Limpiamos valor previo y abrimos el modal
+  inputDate.value = '';
+  const modal = document.getElementById('appointment-modal');
+  modal.classList.remove('hidden');
+  modal.classList.remove('opacity-0');
 }
 
+/**
+ * Cierra el modal de agendar cita con fade-out.
+ */
 function closeAppointmentModal() {
-  document.getElementById('appointment-modal').classList.add('hidden');
+  const modal = document.getElementById('appointment-modal');
+  modal.classList.add('opacity-0');
+  setTimeout(() => {
+    modal.classList.add('hidden');
+  }, 200);
 }
 
-async function scheduleAppointment(predictionId, date) {
+/**
+ * Envía la petición para agendar cita al backend. Valida que la fecha/hora esté completa.
+ */
+async function scheduleAppointment() {
+  const inputDate = document.getElementById('appointment-date');
+  const errorMsg = document.getElementById('appointment-error');
+  const selected = inputDate.value;
+
+  if (!selected) {
+    errorMsg.textContent = 'Por favor, seleccioná una fecha y hora.';
+    errorMsg.classList.remove('hidden');
+    return;
+  }
+  errorMsg.classList.add('hidden');
+
+  const payload = {
+    prediction_id: currentPredictionId,
+    scheduled_time: selected
+  };
+
   try {
     const res = await fetch(API.appointment, {
       method: 'POST',
@@ -136,104 +211,152 @@ async function scheduleAppointment(predictionId, date) {
         ...auth.headers,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ prediction_id: predictionId, scheduled_time: date })
+      body: JSON.stringify(payload)
     });
 
-    if (!res.ok) return alert('Error al agendar cita');
-    alert('Cita agendada con éxito');
+    if (res.status === 201) {
+      closeAppointmentModal();
+      alert('✅ Cita agendada con éxito');
+    } else if (res.status === 404) {
+      const body = await res.json();
+      errorMsg.textContent = body.detail || 'Predicción no encontrada';
+      errorMsg.classList.remove('hidden');
+    } else {
+      const text = await res.text();
+      console.error('Error al agendar cita:', text);
+      alert('❌ Ocurrió un error al agendar la cita');
+    }
   } catch (err) {
-    console.error('Error al agendar cita:', err);
-    alert('Ocurrió un error');
+    console.error('Error de red al agendar cita:', err);
+    alert('❌ Error de red. Intentá nuevamente más tarde.');
   }
 }
 
-document.getElementById('confirm-appointment').addEventListener('click', () => {
-  const date = document.getElementById('appointment-date').value;
-  if (!date) return alert('Por favor seleccioná fecha y hora');
-  scheduleAppointment(currentPredictionId, date);
-  closeAppointmentModal();
+// Listener para el botón “Agendar” dentro del modal
+document
+  .getElementById('confirm-appointment')
+  .addEventListener('click', scheduleAppointment);
+
+// Listener para cerrar modal con la tecla “Esc”
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('appointment-modal');
+    if (!modal.classList.contains('hidden')) {
+      closeAppointmentModal();
+    }
+  }
 });
 
-// Bot response modal
-function showBotResponse(message) {
-  document.getElementById('bot-response').textContent = message;
-  document.getElementById('bot-modal').classList.remove('hidden');
-}
+// ------------------ Funciones del Modal de Bot ------------------
 
+/**
+ * Cierra el modal de recomendación simple del bot.
+ */
 function closeBotModal() {
   document.getElementById('bot-modal').classList.add('hidden');
 }
 
-// Loading overlay
+/**
+ * Muestra el overlay de “Procesando...”.
+ */
 function showLoading() {
   document.getElementById('loading-overlay').style.display = 'flex';
 }
+
+/**
+ * Oculta el overlay de “Procesando...”.
+ */
 function hideLoading() {
   document.getElementById('loading-overlay').style.display = 'none';
 }
 
-// Mostrar modal de chat
-function showChatModal() {
-  document.getElementById('chat-modal').classList.remove('hidden');
-  document.getElementById('chat-input').value = '';
-  document.getElementById('chat-messages').innerHTML = '';
-  document.getElementById('chat-input').focus();
-}
-
-// Cerrar modal de chat
+/**
+ * Cierra el modal de chat por completa.
+ */
 function closeChatModal() {
   document.getElementById('chat-modal').classList.add('hidden');
 }
 
-// Mostrar mensaje en el chat
+/**
+ * Agrega un mensaje dentro del contenedor de chat, con distinto estilo
+ * si proviene del bot (fromBot = true) o del usuario (fromBot = false).
+ * @param {string} text – Texto del mensaje.
+ * @param {boolean} [fromBot=true] – True si el mensaje viene del bot; false si es usuario.
+ */
 function addChatMessage(text, fromBot = true) {
   const container = document.getElementById('chat-messages');
   const msgDiv = document.createElement('div');
-  msgDiv.className = fromBot ? 'mb-2 p-2 bg-blue-100 rounded text-blue-900' : 'mb-2 p-2 bg-gray-300 rounded text-gray-800 text-right';
+  msgDiv.className = fromBot
+    ? 'mb-2 p-2 bg-blue-100 rounded text-blue-900'
+    : 'mb-2 p-2 bg-gray-300 rounded text-gray-800 text-right';
   msgDiv.textContent = text;
   container.appendChild(msgDiv);
   container.scrollTop = container.scrollHeight;
 }
 
-// Manejar envío de mensaje
+// ------------------ Listener para “Enviar” dentro del Chat Modal ------------------
+
 document.getElementById('send-chat-btn').addEventListener('click', async () => {
   const input = document.getElementById('chat-input');
   const text = input.value.trim();
-  if (!text) return;
+  if (!text) return alert('Escribí un mensaje antes de enviar');
+  if (!currentPredictionId) return alert('No hay diagnóstico seleccionado para consultar al bot.');
 
-  addChatMessage(text, false); // mensaje usuario
+  addChatMessage(text, false);
   input.value = '';
 
-  // Simulación o llamada real al backend
+  showLoading();
   try {
+    const payload = {
+      prediction_id: currentPredictionId,
+      user_message: text
+    };
+
     const res = await fetch(API.chat, {
       method: 'POST',
       headers: {
         ...auth.headers,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ message: text }) // ajustar segun backend
+      body: JSON.stringify(payload)
     });
 
     if (!res.ok) {
-      addChatMessage('Error al obtener respuesta del bot.');
+      const errorText = await res.text();
+      console.error("Error response from /chat:", errorText);
+      addChatMessage('Error al obtener respuesta del bot.', true);
       return;
     }
+
     const data = await res.json();
-    addChatMessage(data.reply || 'No hay respuesta del bot.');
+    addChatMessage(data.recommendation || 'No hay respuesta del bot.', true);
+
   } catch (error) {
-    addChatMessage('Error de red al comunicarse con el bot.');
+    console.error("Error en askBot:", error);
+    addChatMessage('Error de red al comunicarse con el bot.', true);
+  } finally {
+    hideLoading();
   }
 });
 
-// Abrir modal al click en botón Consultar al bot
+// ------------------ Listener para abrir el Chat Modal ------------------
+
 document.getElementById('btn-chat').addEventListener('click', () => {
   showChatModal();
 });
 
+/**
+ * Muestra el chat modal (resetea contenido y pone foco en el textarea).
+ */
+function showChatModal() {
+  document.getElementById('chat-messages').innerHTML = '';
+  document.getElementById('chat-input').value = '';
+  document.getElementById('chat-modal').classList.remove('hidden');
+  document.getElementById('chat-input').focus();
+}
 
-// Chart
-let chartInstance;
+// ------------------ Función para dibujar el gráfico del historial ------------------
+
 function drawChart(data) {
   const ctx = document.getElementById('chart').getContext('2d');
   if (chartInstance) chartInstance.destroy();
@@ -264,7 +387,8 @@ function drawChart(data) {
   });
 }
 
-// Inicialización
+// ------------------ Inicialización al cargar la página ------------------
+
 document.addEventListener('DOMContentLoaded', async () => {
   auth.check();
   await fetchUser();

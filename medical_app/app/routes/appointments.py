@@ -8,7 +8,7 @@ from ..schemas.appointment import AppointmentCreate, AppointmentResponse, Appoin
 from ..utils.security import get_current_user
 from ..models.user import User
 
-router = APIRouter(prefix="/appointments", tags=["Appointments"])
+router = APIRouter(tags=["Appointments"])
 
 @router.post("", response_model=AppointmentResponse, status_code=status.HTTP_201_CREATED)
 async def create_appointment(
@@ -16,6 +16,7 @@ async def create_appointment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+
     prediction = db.query(Prediction).filter_by(id=appointment.prediction_id, user_id=current_user.id).first()
     if not prediction:
         raise HTTPException(status_code=404, detail="Diagnóstico no encontrado")

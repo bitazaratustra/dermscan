@@ -7,6 +7,7 @@
   <title>Dashboard - DermScan</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="bg-gray-50">
 
@@ -15,7 +16,7 @@
     <div class="max-w-7xl mx-auto px-4">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
-          <img src="/static/assets/logo.png" alt="Logo" class="h-10 w-10"/>
+          <img src="assets/logo.png" alt="Logo" class="h-10 w-10"/>
           <span class="ml-2 text-xl font-bold text-blue-600">DermScan</span>
         </div>
         <div class="hidden md:flex items-center space-x-8">
@@ -72,6 +73,8 @@
       </div>
     </div>
 
+
+
     <!-- Gráfico -->
     <div class="bg-white p-6 rounded-xl shadow mb-8">
       <h3 class="text-xl font-semibold mb-4 text-blue-600">Evolución del Diagnóstico</h3>
@@ -94,17 +97,91 @@
     </div>
   </div>
 
-  <!-- Modal de cita -->
-  <div id="appointment-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
-      <h3 class="text-xl font-bold text-gray-800 mb-4">Agendar cita médica</h3>
-      <input type="datetime-local" id="appointment-date" class="w-full border rounded-lg px-4 py-2 mb-4"/>
-      <div class="flex justify-end space-x-2">
-        <button onclick="closeModal()" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">Cancelar</button>
-        <button id="confirm-appointment" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Agendar</button>
+<!-- Modal de Agendar Cita -->
+<div
+  id="appointment-modal"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 transition-opacity duration-200"
+>
+  <div class="bg-white rounded-2xl shadow-2xl w-11/12 max-w-lg mx-auto overflow-hidden">
+    <!-- Encabezado del Modal -->
+    <div class="flex items-center justify-between bg-blue-600 px-6 py-4">
+      <div class="flex items-center space-x-2">
+        <!-- Ícono (puede ser un calendario) -->
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 text-white"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 7V3m8 4V3m-9 8h10m-14 5h18a2 2 0 002-2V7a2 2 0 00-2-2H4a2 2 0 00-2 2v11a2 2 0 002 2z" />
+        </svg>
+        <h3 class="text-lg font-semibold text-white">Agendar Cita Médica</h3>
+      </div>
+      <!-- Botón “X” para cerrar -->
+      <button
+        onclick="closeAppointmentModal()"
+        class="text-white hover:text-gray-200 focus:outline-none"
+        aria-label="Cerrar"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Contenido del Modal -->
+    <div class="px-6 py-6">
+      <!-- Texto de instrucciones -->
+      <p class="text-gray-700 mb-4">
+        Seleccioná la fecha y hora deseadas para tu cita médica.
+      </p>
+
+      <!-- Contenedor del campo de fecha/hora -->
+      <div class="mb-4">
+        <label
+          for="appointment-date"
+          class="block text-sm font-medium text-gray-700 mb-1"
+          >Fecha y hora</label
+        >
+        <input
+          type="datetime-local"
+          id="appointment-date"
+          class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          min="" <!-- Se establecerá dinámicamente -->
+        />
+        <p id="appointment-error" class="mt-2 text-sm text-red-600 hidden">
+          Por favor, seleccioná una fecha y hora válidas.
+        </p>
+      </div>
+
+      <!-- Botones -->
+      <div class="flex justify-end space-x-3">
+        <button
+          onclick="closeAppointmentModal()"
+          class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+        >
+          Cancelar
+        </button>
+        <button
+          id="confirm-appointment"
+          class="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400 transition"
+        >
+          Agendar
+        </button>
       </div>
     </div>
   </div>
+</div>
+
 
   <!-- Modal del bot -->
   <div id="bot-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center hidden z-50">
@@ -121,20 +198,23 @@
     <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg flex flex-col max-h-[80vh]">
       <h3 class="text-xl font-bold text-blue-700 mb-4">Chat con el Bot Médico</h3>
 
-      <div id="chat-messages" class="flex-grow overflow-y-auto border rounded p-4 mb-4 bg-gray-50">
+      <div id="chat-messages" class="flex-grow overflow-y-auto border rounded p-4 mb-4 bg-gray-50 chat-bot">
         <!-- Mensajes aparecerán aquí -->
       </div>
 
+
+    <div class="flex flex-col space-y-2">
+      <textarea id="chat-input" type="text" placeholder="Escribe tu mensaje..." class="chat-bot-messages w-full border rounded px-3 py-2" rows="4"></textarea>
       <div class="flex space-x-2">
-        <input id="chat-input" type="text" placeholder="Escribe tu mensaje..." class="flex-grow border rounded px-3 py-2"/>
         <button id="send-chat-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Enviar</button>
         <button onclick="closeChatModal()" class="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400">Cerrar</button>
       </div>
     </div>
+
+    </div>
   </div>
 
   <!-- Scripts -->
-  <script src="https://kit.fontawesome.com/a2e8f1f4e6.js" crossorigin="anonymous"></script>
   <script src="/static/js/main.js"></script>
   <script>
     function previewImage(event) {

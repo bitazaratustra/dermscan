@@ -11,7 +11,6 @@ class Settings(BaseSettings):
     postgres_db: str = "dermscan"
     postgres_host: str = "localhost"
     postgres_port: str = "5432"
-    database_url: str = "postgresql://postgres:postgres@localhost:5432/dermscan"
 
     # JWT
     secret_key: str
