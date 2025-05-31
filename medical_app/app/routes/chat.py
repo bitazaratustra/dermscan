@@ -309,26 +309,24 @@ MASTER_KEYWORDS = {
 @router.post("", response_model=dict)
 async def chat_with_diagnosis(chat_req: ChatRequest, token: str = Depends(security), db: Session = Depends(get_db)):
     try:
-        # Obtener la predicción de la base de datos
         pred = db.query(Prediction).get(chat_req.prediction_id)
         if not pred:
             raise HTTPException(status_code=404, detail="Predicción no encontrada")
 
-        # Normalizar diagnóstico para búsqueda
         diagnostico = pred.diagnosis.lower()
 
-        # Buscar la categoría adecuada usando palabras clave
+
         categoria_encontrada = None
 
-        # 1. Buscar coincidencia exacta en las categorías principales
+
         for categoria in RESPUESTAS_MEDICAS:
             if categoria != "default" and categoria in diagnostico:
                 categoria_encontrada = categoria
                 break
 
-        # 2. Buscar por palabras clave si no se encontró coincidencia directa
+
         if not categoria_encontrada:
-            # Primero buscar coincidencias exactas con palabras clave
+
             for categoria, keywords in MASTER_KEYWORDS.items():
                 for keyword in keywords:
                     if keyword in diagnostico:
@@ -337,20 +335,20 @@ async def chat_with_diagnosis(chat_req: ChatRequest, token: str = Depends(securi
                 if categoria_encontrada:
                     break
 
-            # Si aún no se encuentra, buscar coincidencias parciales
+
             if not categoria_encontrada:
                 for categoria, keywords in MASTER_KEYWORDS.items():
                     if any(keyword in diagnostico for keyword in keywords):
                         categoria_encontrada = categoria
                         break
 
-        # 3. Seleccionar respuesta aleatoria
+
         if categoria_encontrada and categoria_encontrada in RESPUESTAS_MEDICAS:
             respuesta = random.choice(RESPUESTAS_MEDICAS[categoria_encontrada])
         else:
-            # Usar respuesta default si no se encontró categoría
+
             respuesta = random.choice(RESPUESTAS_MEDICAS["default"])
-            # Personalizar respuesta default con el diagnóstico
+
             respuesta = f"{respuesta}"
 
         return {
