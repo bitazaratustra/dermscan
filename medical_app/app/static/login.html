@@ -1,52 +1,152 @@
-  <!-- login.html -->
-  <!DOCTYPE html>
-  <html lang="es">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Iniciar Sesión - DermScan</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  </head>
-  <body class="bg-gray-100 flex items-center justify-center h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-      <h2 class="text-2xl font-bold mb-6 text-center text-blue-600">Iniciar Sesión</h2>
-      <form id="login-form" class="space-y-4">
-        <div>
-          <label class="block mb-1 text-gray-600">Email</label>
-          <input type="email" name="email" class="w-full px-4 py-2 border rounded-lg" required>
-        </div>
-        <div>
-          <label class="block mb-1 text-gray-600">Contraseña</label>
-          <input type="password" name="password" class="w-full px-4 py-2 border rounded-lg" required>
-        </div>
-        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Ingresar</button>
-      </form>
-      <p id="error-msg" class="mt-4 text-sm text-red-500 text-center hidden">Credenciales inválidas</p>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iniciar Sesión - DermScan</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+  <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+    <!-- Pestañas para Login/Registro -->
+    <div class="flex mb-6 border-b">
+      <button id="login-tab" class="flex-1 py-2 font-medium text-blue-600 border-b-2 border-blue-600">Iniciar Sesión</button>
+      <button id="register-tab" class="flex-1 py-2 font-medium text-gray-500">Registrarse</button>
     </div>
 
-    <script>
-      document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const data = new URLSearchParams();
-        data.append('username', form.email.value);
-        data.append('password', form.password.value);
+    <!-- Formulario de Login -->
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="block mb-1 text-gray-600">Email</label>
+        <input type="email" name="email" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <div>
+        <label class="block mb-1 text-gray-600">Contraseña</label>
+        <input type="password" name="password" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Ingresar</button>
+    </form>
 
-        try {
-          const res = await fetch('/auth/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: data,
-          });
+    <!-- Formulario de Registro (oculto inicialmente) -->
+    <form id="register-form" class="space-y-4 hidden">
+      <div>
+        <label class="block mb-1 text-gray-600">Nombre completo</label>
+        <input type="text" name="full_name" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <div>
+        <label class="block mb-1 text-gray-600">Email</label>
+        <input type="email" name="email" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <div>
+        <label class="block mb-1 text-gray-600">Contraseña</label>
+        <input type="password" name="password" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <div>
+        <label class="block mb-1 text-gray-600">Confirmar contraseña</label>
+        <input type="password" name="confirm_password" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">Registrarse</button>
+    </form>
 
-          if (!res.ok) throw new Error();
-          const json = await res.json();
-          localStorage.setItem('authToken', json.access_token);
-          window.location.href = '/static/index.html';
-        } catch {
-          document.getElementById('error-msg').classList.remove('hidden');
+    <p id="error-msg" class="mt-4 text-sm text-red-500 text-center hidden"></p>
+    <p id="success-msg" class="mt-4 text-sm text-green-500 text-center hidden"></p>
+  </div>
+
+  <script>
+    // Manejo de pestañas
+    document.getElementById('login-tab').addEventListener('click', () => {
+      document.getElementById('login-form').classList.remove('hidden');
+      document.getElementById('register-form').classList.add('hidden');
+      document.getElementById('login-tab').classList.add('border-blue-600', 'text-blue-600');
+      document.getElementById('login-tab').classList.remove('text-gray-500');
+      document.getElementById('register-tab').classList.remove('border-blue-600', 'text-blue-600');
+      document.getElementById('register-tab').classList.add('text-gray-500');
+    });
+
+    document.getElementById('register-tab').addEventListener('click', () => {
+      document.getElementById('register-form').classList.remove('hidden');
+      document.getElementById('login-form').classList.add('hidden');
+      document.getElementById('register-tab').classList.add('border-blue-600', 'text-blue-600');
+      document.getElementById('register-tab').classList.remove('text-gray-500');
+      document.getElementById('login-tab').classList.remove('border-blue-600', 'text-blue-600');
+      document.getElementById('login-tab').classList.add('text-gray-500');
+    });
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const data = new URLSearchParams();
+      data.append('username', form.email.value);
+      data.append('password', form.password.value);
+
+      try {
+        const res = await fetch('/auth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: data,
+        });
+
+        if (!res.ok) throw new Error('Credenciales inválidas');
+
+        const json = await res.json();
+        localStorage.setItem('authToken', json.access_token);
+        window.location.href = '/static/index.html';
+      } catch (err) {
+        const errorMsg = document.getElementById('error-msg');
+        errorMsg.textContent = err.message || 'Error al iniciar sesión';
+        errorMsg.classList.remove('hidden');
+        document.getElementById('success-msg').classList.add('hidden');
+      }
+    });
+
+    // Registro
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const errorMsg = document.getElementById('error-msg');
+      const successMsg = document.getElementById('success-msg');
+
+      // Validar contraseñas
+      if (form.password.value !== form.confirm_password.value) {
+        errorMsg.textContent = 'Las contraseñas no coinciden';
+        errorMsg.classList.remove('hidden');
+        successMsg.classList.add('hidden');
+        return;
+      }
+
+      const userData = {
+        email: form.email.value,
+        password: form.password.value,
+        full_name: form.full_name.value
+      };
+
+      try {
+        const res = await fetch('/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(userData)
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Error en el registro');
         }
-      });
-    </script>
-  </body>
-  </html>
+
+        // Registro exitoso
+        successMsg.textContent = '¡Registro exitoso! Ahora puedes iniciar sesión.';
+        successMsg.classList.remove('hidden');
+        errorMsg.classList.add('hidden');
+
+        // Cambiar a pestaña de login
+        document.getElementById('login-tab').click();
+        form.reset();
+      } catch (err) {
+        errorMsg.textContent = err.message || 'Error al registrar usuario';
+        errorMsg.classList.remove('hidden');
+        successMsg.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
