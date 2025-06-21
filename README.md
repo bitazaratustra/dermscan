@@ -29,8 +29,6 @@ Aplicación web para diagnóstico asistido de enfermedades dermatológicas media
 
 ### Modelo de Deep Learning
 - **PyTorch 2.0+** (framework principal)
-- **TorchVision** (modelos preentrenados)
-- **OpenCV** (procesamiento de imágenes)
 - **NumPy & Pandas** (manipulación de datos)
 - **Scikit-learn** (métricas de evaluación)
 
