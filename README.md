@@ -1,6 +1,6 @@
 # DermScan - Sistema de Diagnóstico Dermatológico Avanzado
 
-![DermScan Architecture](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.pngwing.com%2Fes%2Fsearch%3Fq%3Ds%25C3%25ADmbolo%2Bm%25C3%25A9dico&psig=AOvVaw1_IwXcZotPvZB7xyu15PTU&ust=1750599882164000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKC4gIzTgo4DFQAAAAAdAAAAABAE) 
+![DermScan Architecture](https://www.pngwing.com/es/free-png-dbtgg) 
 
 Aplicación web para diagnóstico asistido de enfermedades dermatológicas mediante deep learning. Permite a usuarios subir imágenes de lesiones cutáneas y recibe análisis predictivos con información médica relevante.
 
