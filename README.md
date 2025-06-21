@@ -1,6 +1,6 @@
 # DermScan - Sistema de Diagnóstico Dermatológico Avanzado
 
-![DermScan Architecture](https://www.freepik.es/vector-gratis/simbolo-medico-plano_28903695.htm#fromView=keyword&page=1&position=4&uuid=4df1907a-3ad8-47d9-b94f-9a3d5204a7c1&query=Logo+Medico) 
+![DermScan Architecture](https://es.pinterest.com/pin/186617978304457964/) 
 
 Aplicación web para diagnóstico asistido de enfermedades dermatológicas mediante deep learning. Permite a usuarios subir imágenes de lesiones cutáneas y recibe análisis predictivos con información médica relevante.
 
