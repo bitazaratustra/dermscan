@@ -1,6 +1,6 @@
 # DermScan - Sistema de Diagnóstico Dermatológico Avanzado
 
-![DermScan Architecture](https://www.google.com/url?sa=i&url=https%3A%2F%2Fdoctormercadeo.com%2Fcomo-hacer-un-logotipo-para-un-medico-que-inspire-confianza%2F&psig=AOvVaw1_IwXcZotPvZB7xyu15PTU&ust=1750599882164000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKC4gIzTgo4DFQAAAAAdAAAAABAL](https://www.istockphoto.com/es/vector/caduceo-s%C3%ADmbolo-m%C3%A9dico-gm471629610-63254735)](https://www.freepik.es/vector-gratis/simbolo-medico-plano_28903695.htm#fromView=keyword&page=1&position=4&uuid=4df1907a-3ad8-47d9-b94f-9a3d5204a7c1&query=Logo+Medico) 
+![DermScan Architecture](https://www.freepik.es/vector-gratis/simbolo-medico-plano_28903695.htm#fromView=keyword&page=1&position=4&uuid=4df1907a-3ad8-47d9-b94f-9a3d5204a7c1&query=Logo+Medico) 
 
 Aplicación web para diagnóstico asistido de enfermedades dermatológicas mediante deep learning. Permite a usuarios subir imágenes de lesiones cutáneas y recibe análisis predictivos con información médica relevante.
 
