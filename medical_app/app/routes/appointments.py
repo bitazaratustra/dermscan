@@ -1,6 +1,8 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+
+from ..models.doctors import Doctor
 from ..database import get_db
 from ..models.appointment import Appointment
 from ..models.prediction import Prediction
@@ -21,11 +23,19 @@ async def create_appointment(
     if not prediction:
         raise HTTPException(status_code=404, detail="Diagnóstico no encontrado")
 
+    available_doctor = db.query(Doctor).first()
+    if not available_doctor:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="No doctors available"
+        )
+
 
     db_appointment = Appointment(
         user_id=current_user.id,
         prediction_id=appointment.prediction_id,
-        scheduled_time=appointment.scheduled_time
+        scheduled_time=appointment.scheduled_time,
+        doctor_id=available_doctor.id
     )
 
     db.add(db_appointment)

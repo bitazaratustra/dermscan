@@ -1,29 +1,17 @@
-# app/utils/security.py
-from fastapi import Request
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
+from jose import jwt, JWTError
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from ..config.settings import settings
+from sqlalchemy.orm import Session
+from datetime import datetime, timedelta
+from passlib.context import CryptContext
+
 from ..database import get_db
 from ..models.user import User
-from sqlalchemy.orm import Session
+from ..models.doctors import Doctor
+from ..config.settings import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
-
-
-class JWTBearer(HTTPBearer):
-    async def __call__(self, request: Request):
-        credentials: HTTPAuthorizationCredentials = await super().__call__(request)
-        if not credentials.scheme == "Bearer":
-            raise HTTPException(
-                status_code=403,
-                detail="Invalid authentication scheme"
-            )
-        return credentials.credentials
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
@@ -34,36 +22,66 @@ def get_password_hash(password: str):
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     expire = datetime.utcnow() + (expires_delta or timedelta(minutes=15))
-    to_encode.update({"exp": expire})
-
+    to_encode.update({
+        "exp": expire,
+        "role": data.get("role", "user")
+    })
     return jwt.encode(
         to_encode,
         settings.secret_key,
         algorithm=settings.algorithm
     )
 
-async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
-) -> User:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def decode_token(token: str):
     try:
         payload = jwt.decode(
             token,
             settings.secret_key,
             algorithms=[settings.algorithm]
         )
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
+        return payload
     except JWTError:
+        return None
+
+async def get_current_actor(
+    token: str = Depends(oauth2_scheme),
+    db: Session = Depends(get_db)
+):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Credenciales inválidas",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    payload = decode_token(token)
+    if not payload:
         raise credentials_exception
 
-    user = db.query(User).filter(User.email == email).first()
-    if user is None:
+    email = payload.get("sub")
+    role = payload.get("role")
+
+    if role == "doctor":
+        actor = db.query(Doctor).filter(Doctor.email == email).first()
+    else:
+        actor = db.query(User).filter(User.email == email).first()
+
+    if not actor:
         raise credentials_exception
-    return user
+
+    return actor
+
+async def get_current_user(actor = Depends(get_current_actor)):
+    if not isinstance(actor, User):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso restringido a pacientes"
+        )
+    return actor
+
+async def get_current_doctor(actor = Depends(get_current_actor)):
+    if not isinstance(actor, Doctor):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso restringido a médicos"
+        )
+    return actor

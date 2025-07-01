@@ -8,7 +8,6 @@
 </head>
 <body class="bg-gray-100 flex items-center justify-center h-screen">
   <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-    <!-- Pestañas para Login/Registro -->
     <div class="flex mb-6 border-b">
       <button id="login-tab" class="flex-1 py-2 font-medium text-blue-600 border-b-2 border-blue-600">Iniciar Sesión</button>
       <button id="register-tab" class="flex-1 py-2 font-medium text-gray-500">Registrarse</button>
@@ -23,6 +22,13 @@
       <div>
         <label class="block mb-1 text-gray-600">Contraseña</label>
         <input type="password" name="password" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-600">Tipo de usuario</label>
+        <select name="user_type" class="w-full px-4 py-2 border rounded-lg">
+          <option value="user">Paciente</option>
+          <option value="doctor">Médico</option>
+        </select>
       </div>
       <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Ingresar</button>
     </form>
@@ -44,6 +50,27 @@
       <div>
         <label class="block mb-1 text-gray-600">Confirmar contraseña</label>
         <input type="password" name="confirm_password" class="w-full px-4 py-2 border rounded-lg" required>
+      </div>
+      <div id="doctor-fields" class="hidden">
+        <div>
+          <label class="block mb-1 text-gray-600">Número de licencia</label>
+          <input type="text" name="license_number" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block mb-1 text-gray-600">Especialidad</label>
+          <input type="text" name="specialty" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+        <div>
+          <label class="block mb-1 text-gray-600">Hospital/Afiliación</label>
+          <input type="text" name="hospital_affiliation" class="w-full px-4 py-2 border rounded-lg">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block mb-1 text-gray-600">Tipo de usuario</label>
+        <select name="user_type_register" class="w-full px-4 py-2 border rounded-lg">
+          <option value="user">Paciente</option>
+          <option value="doctor">Médico</option>
+        </select>
       </div>
       <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700">Registrarse</button>
     </form>
@@ -72,26 +99,64 @@
       document.getElementById('login-tab').classList.add('text-gray-500');
     });
 
+    // Mostrar campos adicionales para médico en registro
+    document.querySelector('select[name="user_type_register"]').addEventListener('change', (e) => {
+      if (e.target.value === 'doctor') {
+        document.getElementById('doctor-fields').classList.remove('hidden');
+      } else {
+        document.getElementById('doctor-fields').classList.add('hidden');
+      }
+    });
+
     // Login
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
-      const data = new URLSearchParams();
-      data.append('username', form.email.value);
-      data.append('password', form.password.value);
+      const userType = form.user_type.value;
+
+      // Determinar el endpoint según el tipo de usuario
+      const endpoint = userType === 'doctor' ? '/doctor/login' : '/auth/token';
+
+      // Crear el cuerpo de la solicitud
+      let body;
+      let headers = {};
+
+      if (userType === 'doctor') {
+        body = JSON.stringify({
+          email: form.email.value,
+          password: form.password.value
+          });
+        headers = {'Content-Type': 'application/json'};
+      } else {
+        body = new URLSearchParams({
+          username: form.email.value,
+          password: form.password.value,
+          grant_type: 'password'
+        });
+        headers = {'Content-Type': 'application/x-www-form-urlencoded'};
+      }
 
       try {
-        const res = await fetch('/auth/token', {
+        const res = await fetch(endpoint, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: data,
+          headers: headers,
+          body: body
         });
 
-        if (!res.ok) throw new Error('Credenciales inválidas');
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.detail || 'Error en las credenciales');
+        }
 
-        const json = await res.json();
-        localStorage.setItem('authToken', json.access_token);
-        window.location.href = '/static/index.html';
+        const data = await res.json();
+        localStorage.setItem('authToken', data.access_token);
+
+        // Redirigir según el tipo de usuario
+        if (userType === 'doctor') {
+          window.location.href = '/static/doctor_dashboard.html';
+        } else {
+          window.location.href = '/static/index.html';
+        }
       } catch (err) {
         const errorMsg = document.getElementById('error-msg');
         errorMsg.textContent = err.message || 'Error al iniciar sesión';
@@ -115,17 +180,33 @@
         return;
       }
 
-      const userData = {
-        email: form.email.value,
-        password: form.password.value,
-        full_name: form.full_name.value
-      };
+      const userType = form.user_type_register.value;
+      let endpoint, body;
+
+      if (userType === 'doctor') {
+        endpoint = '/doctor/register';
+        body = {
+          email: form.email.value,
+          password: form.password.value,
+          full_name: form.full_name.value,
+          license_number: form.license_number.value,
+          specialty: form.specialty.value,
+          hospital_affiliation: form.hospital_affiliation.value
+        };
+      } else {
+        endpoint = '/auth/register';
+        body = {
+          email: form.email.value,
+          password: form.password.value,
+          full_name: form.full_name.value
+        };
+      }
 
       try {
-        const res = await fetch('/auth/register', {
+        const res = await fetch(endpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData)
+          body: JSON.stringify(body)
         });
 
         if (!res.ok) {

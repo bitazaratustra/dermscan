@@ -1,5 +1,3 @@
-// main.js
-
 // ------------------ Configuración de Endpoints ------------------
 const API = {
   user: '/user',
@@ -19,6 +17,15 @@ const auth = {
       'Authorization': `Bearer ${this.token}`
     };
   },
+  get role() {
+    if (!this.token) return null;
+    try {
+      const payload = JSON.parse(atob(this.token.split('.')[1]));
+      return payload.role || 'user';
+    } catch (e) {
+      return 'user';
+    }
+  },
   check() {
     if (!this.token) {
       window.location.href = '/static/login.html';
@@ -31,14 +38,11 @@ const auth = {
 };
 
 // ------------------ Variables Globales ------------------
-let currentPredictionId = null; // Se usará para mantener el ID de la predicción activa
-let chartInstance = null;       // Para almacenar la instancia del gráfico
+let currentPredictionId = null;
+let chartInstance = null;
 
 // ------------------ Funciones Principales ------------------
 
-/**
- * Obtiene la información del usuario actual y la muestra en el DOM.
- */
 async function fetchUser() {
   try {
     const res = await fetch(API.user, { headers: auth.headers });
@@ -52,10 +56,6 @@ async function fetchUser() {
   }
 }
 
-/**
- * Envía la imagen al backend para generar el diagnóstico.
- * @param {File} file – Archivo de imagen a subir.
- */
 async function handleUpload(file) {
   const formData = new FormData();
   formData.append('file', file);
@@ -81,24 +81,15 @@ async function handleUpload(file) {
   }
 }
 
-/**
- * Muestra los resultados del diagnóstico en el DOM y habilita los botones.
- * @param {Object} data – Objeto con { id, diagnosis, confidence }.
- */
 function updateDiagnosis(data) {
   currentPredictionId = data.id;
   document.getElementById('diagnosis-text').textContent = data.diagnosis;
   document.getElementById('confidence').textContent = `${(data.confidence * 100).toFixed(2)}%`;
 
-  // Al hacer clic en "Consultar al bot", se abre el chat modal
   document.getElementById('btn-chat').onclick = () => askBot(data.id);
-  // Al hacer clic en "Solicitar cita médica", se abre el modal de citas
   document.getElementById('btn-appointment').onclick = () => showAppointmentModal(data.id);
 }
 
-/**
- * Obtiene el historial de diagnósticos y los muestra en la sección correspondiente.
- */
 async function fetchHistory() {
   try {
     const res = await fetch(API.history, { headers: auth.headers });
@@ -467,8 +458,13 @@ function drawChart(data) {
 }
 
 // ------------------ Inicialización al cargar la página ------------------
-
 document.addEventListener('DOMContentLoaded', async () => {
+  // Si es médico, redirigir
+  if (auth.role === 'doctor') {
+    window.location.href = '/static/doctor_dashboard.html';
+    return;
+  }
+
   auth.check();
   await fetchUser();
   await fetchHistory();

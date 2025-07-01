@@ -48,6 +48,7 @@ async def predict_lesion(
         db_prediction = Prediction(
             user_id=current_user.id,
             image_path=filename,
+            image_filename=full_path.name,
             diagnosis=prediction["class_name"],
             confidence=prediction["confidence"]
         )

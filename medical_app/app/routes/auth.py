@@ -3,12 +3,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
+from ..models.doctors import Doctor
+
 from ..services.auth import authenticate_user
 from ..database import get_db
 from ..models.user import User
 from ..schemas.user import UserCreate, UserResponse
 from ..schemas.auth import Token
 from ..utils.security import (
+    get_current_doctor,
     get_current_user,
     get_password_hash,
     create_access_token,
@@ -63,8 +66,3 @@ async def login(
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@router.get("/user", response_model=UserResponse)
-def read_users_me(current_user: User = Depends(get_current_user)):
-    return current_user

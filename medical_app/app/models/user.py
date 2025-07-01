@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Boolean
-from .base import Base
 from sqlalchemy.orm import relationship
+from .base import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -13,3 +13,4 @@ class User(Base):
     full_name = Column(String, nullable=True)
 
     appointments = relationship("Appointment", back_populates="user")
+    prediction = relationship("Prediction", back_populates="user")

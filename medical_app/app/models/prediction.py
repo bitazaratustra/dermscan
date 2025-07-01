@@ -9,8 +9,10 @@ class Prediction(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     image_path = Column(String)
+    image_filename = Column(String, nullable=True)
     diagnosis = Column(String)
     confidence = Column(Float)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     appointments = relationship("Appointment", back_populates="prediction")
+    user = relationship("User", back_populates="prediction")

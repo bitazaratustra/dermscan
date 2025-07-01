@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Médico - DermScan</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+  <style>
+    .doctor-header-card {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+    }
+    .modal-content {
+      margin: auto;
+      display: block;
+      max-width: 80%;
+      max-height: 80%;
+      margin-top: 5%;
+    }
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: #bbb;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <nav class="bg-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <img src="assets/logo.png" alt="Logo" class="h-10 w-10"/>
+          <span class="ml-2 text-xl font-bold text-blue-600">DermScan - Panel Médico</span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <span id="navbar-doctor-name" class="font-medium"></span>
+          <button id="logout-btn" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">
+            Cerrar sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="doctor-header-card p-6 rounded-xl mb-6">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 class="text-3xl font-bold mb-2">Bienvenido, <span id="doctor-name" class="text-white"></span></h2>
+          <p class="text-xl font-semibold text-blue-100 flex items-center">
+            <i class="fas fa-stethoscope mr-2"></i>
+            Especialidad: <span id="doctor-specialty" class="ml-1 font-bold"></span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h3 class="text-xl font-semibold mb-4 text-blue-600">Citas Asignadas</h3>
+      <div class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gray-200">
+            <tr>
+              <th class="py-2 px-4 border-b">Paciente</th>
+              <th class="py-2 px-4 border-b">Diagnóstico</th>
+              <th class="py-2 px-4 border-b">Confianza</th>
+              <th class="py-2 px-4 border-b">Fecha y Hora</th>
+              <th class="py-2 px-4 border-b">Imagen</th>
+              <th class="py-2 px-4 border-b">Estado</th>
+              <th class="py-2 px-4 border-b">Cambiar Estado</th>
+            </tr>
+          </thead>
+          <tbody id="appointments-container">
+            <!-- Las citas se cargarán aquí -->
+          </tbody>
+        </table>
+        <p id="no-appointments" class="text-center py-4 text-gray-500 hidden">
+          No tienes citas asignadas
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para mostrar imágenes -->
+  <div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImage">
+  </div>
+
+  <script src="/static/js/doctor_dashboard.js"></script>
+</body>
+</html>

@@ -22,7 +22,9 @@ class AppointmentSummary(BaseModel):
     status: str
     diagnosis: str
     confidence: float
-    user_full_name: Optional[str]
-
+    user_full_name: str
+    image_filename: Optional[str] = None
     class Config:
-        from_attributes = True
+        orm_mode = True
+class AppointmentStatusUpdate(BaseModel):
+    status: str
